@@ -4,7 +4,7 @@ const HospitalDashboard = () => {
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
   const [bloodAvailable, setBloodAvailable] = useState({
-    "A+": 0, "A-": 0, "B+": 0, "B-": 0, "O+": 0, "O-": 0, "AB+": 0, "AB-": 0,
+    "A+": "0", "A-": "0", "B+": "0", "B-": "0", "O+": "0", "O-": "0", "AB+": "0", "AB-": "0",
   });
   const [hospitals, setHospitals] = useState([]);
 
@@ -13,16 +13,32 @@ const HospitalDashboard = () => {
   }, []);
 
   // Fetch all hospitals
-  const fetchHospitals = async () => {
+// Fetch all hospitals
+const fetchHospitals = async () => {
+  try {
     const res = await fetch("http://localhost:3000/api/hospitals/all");
+    if (!res.ok) {
+      throw new Error('Failed to fetch hospitals');
+    }
     const data = await res.json();
     setHospitals(data);
-  };
+  } catch (error) {
+    console.error("Error fetching hospitals:", error);
+  }
+};
+
 
   // Handle input change for blood availability
-  const handleBloodChange = (group, value) => {
-    setBloodAvailable({ ...bloodAvailable, [group]: Number(value) });
-  };
+ // Handle input change for blood availability
+const handleBloodChange = (group, value) => {
+  if (/^\d*$/.test(value)) { // Ensure only digits are entered
+    setBloodAvailable({
+      ...bloodAvailable,
+      [group]: value === "" ? 0 : parseInt(value, 10),  // Convert input to number
+    });
+  }
+};
+
 
   // Add hospital details
   const handleSubmit = async () => {
@@ -54,7 +70,12 @@ const HospitalDashboard = () => {
           {Object.keys(bloodAvailable).map((group) => (
             <div key={group}>
               <label>{group}</label>
-              <input className="border p-2 w-full" type="number" min="0" value={bloodAvailable[group]} onChange={(e) => handleBloodChange(group, e.target.value)} />
+              <input 
+                className="border p-2 w-full" 
+                type="text"  // Use text to allow leading zeros
+                value={bloodAvailable[group]} 
+                onChange={(e) => handleBloodChange(group, e.target.value)} 
+              />
             </div>
           ))}
         </div>

@@ -12,17 +12,26 @@ const Register = () => {
     const res = await fetch("http://localhost:3000/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password, role }), // <-- Include role
+      body: JSON.stringify({ name, email, password, role }), // Include role
     });
-
+  
     const data = await res.json();
     if (res.ok) {
       localStorage.setItem("token", data.token);
-      navigate("/donor-dashboard");
+      
+      // Navigate based on role
+      if (role === "donor") {
+        navigate("/donor-dashboard");
+      } else if (role === "hospital") {
+        navigate("/hospital-dashboard");
+      } else {
+        alert("Invalid role selected");
+      }
     } else {
       alert(data.message);
     }
   };
+  
 
   return (
     <div className="p-6">

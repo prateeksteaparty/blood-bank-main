@@ -9,33 +9,50 @@ const router = express.Router();
 
 // REGISTER USER
 router.post("/register", async (req, res) => {
-    try {
-        console.log("Incoming Register Request:", req.body); // Log incoming data
+  try {
+      console.log("Incoming Register Request:", req.body); 
 
-        const { name, email, password, role } = req.body;
-        if (!name || !email || !password || !role) {
-            return res.status(400).json({ message: "All fields are required" });
-        }
+      const { name, email, password, role } = req.body;
+      if (!name || !email || !password || !role) {
+          return res.status(400).json({ message: "All fields are required" });
+      }
 
-        let user = await User.findOne({ email });
-        if (user) return res.status(400).json({ message: "User already exists" });
+      // Add this logging
+      console.log("Checking for existing user...");
+      let user = await User.findOne({ email });
+      console.log("Existing user check result:", user);
 
-        // Hash password
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
+      if (user) return res.status(400).json({ message: "User already exists" });
 
-        user = new User({ name, email, password: hashedPassword, role });
-        await user.save();
+      // Add this logging
+      console.log("Creating password hash...");
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
 
-        console.log("User Registered Successfully:", user); // Log user info
-        res.status(201).json({ message: "User registered successfully" });
+      // Add this logging
+      console.log("Creating new user...");
+      user = new User({ name, email, password: hashedPassword, role });
+      
+      // Add this logging
+      console.log("Saving user...");
+      await user.save();
 
-    } catch (err) {
-        console.error("Error in /register:", err); // Log backend error
-        res.status(500).json({ message: "Server error" });
-    }
+      console.log("User Registered Successfully:", user); 
+      res.status(201).json({ message: "User registered successfully" });
+
+  } catch (err) {
+      // Improve error logging
+      console.error("Error in /register:", {
+          message: err.message,
+          stack: err.stack,
+          name: err.name
+      }); 
+      return res.status(500).json({ 
+          message: "Server error", 
+          error: err.message  // Send more detailed error to client in development
+      });
+  }
 });
-
   
 
 // LOGIN USER

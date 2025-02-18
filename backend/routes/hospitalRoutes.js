@@ -32,4 +32,27 @@ router.get("/all", async (req, res) => {
   }
 });
 
+// Search hospitals by location
+router.get("/search", async (req, res) => {
+  try {
+    const { location } = req.query;
+    
+    if (!location) {
+      return res.status(400).json({ message: "Location query parameter is required" });
+    }
+
+    // Perform case-insensitive search using regex
+    const hospitals = await Hospital.find({ location: new RegExp(location, "i") });
+
+    if (hospitals.length === 0) {
+      return res.status(404).json({ message: "No hospitals found for the given location" });
+    }
+
+    res.json(hospitals);
+  } catch (err) {
+    console.error("Error in /search:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 module.exports = router;

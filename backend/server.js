@@ -1,19 +1,39 @@
 const express = require("express");
 const cors = require("cors");
+const connectDB = require('./db'); // Import the database connection
 
 const app = express();
 
-// Allow requests from frontend (Vite runs on port 5173)
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+// Connect to MongoDB first
+connectDB()
+  .then(() => {
+    // Only set up routes and start server after DB connection is established
+    
+    // Middleware
+    app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+    app.use(express.json());
 
-app.use(express.json()); // Ensure Express parses JSON requests
+    // Import routes
+    const authRoutes = require("./routes/authRoutes");
+    const donorRoutes = require("./routes/donorRoutes");
+    const hospitalRoutes = require("./routes/hospitalRoutes");  // Import hospital routes
 
-// Import routes
-const authRoutes = require("./routes/authRoutes");
-const donorRoutes = require("./routes/donorRoutes");
+    // Route middleware
+    app.use("/api/auth", authRoutes);
+    app.use("/api/donors", donorRoutes);
+    app.use("/api/hospitals", hospitalRoutes);  // Add the hospitals route
 
-app.use("/api/auth", authRoutes);
-app.use("/api/donors", donorRoutes);
+    // Start server
+    const PORT = 3000;
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  })
+  .catch(error => {
+    console.error('Failed to connect to MongoDB:', error);
+    process.exit(1);
+  });
 
-const PORT = 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Handle uncaught errors
+process.on('unhandledRejection', (error) => {
+  console.error('Unhandled promise rejection:', error);
+  process.exit(1);
+});

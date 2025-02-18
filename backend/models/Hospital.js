@@ -1,13 +1,22 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-const HospitalSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  location: { type: String, required: true },
+// Define the hospital schema
+const hospitalSchema = new mongoose.Schema({
+  name: String,
+  location: String,
   bloodAvailable: {
-    type: Map,
-    of: Number, // Example: { "A+": 5, "B+": 2 }
-    default: {},
+    "A+": Number,
+    "A-": Number,
+    "B+": Number,
+    "B-": Number,
+    "O+": Number,
+    "O-": Number,
+    "AB+": Number,
+    "AB-": Number,
   },
 });
 
-module.exports = mongoose.model("Hospital", HospitalSchema);
+// Create the model based on the schema
+const Hospital = mongoose.model('Hospital', hospitalSchema);
+
+module.exports = Hospital;  // Ensure this is properly exported

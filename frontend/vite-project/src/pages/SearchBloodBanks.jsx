@@ -1,16 +1,26 @@
 import { useState } from "react";
+import axios from 'axios';
 
 const SearchBloodBanks = () => {
   const [city, setCity] = useState("");
   const [bloodBanks, setBloodBanks] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleSearch = () => {
-    // Simulating an API call
-    const sampleBanks = [
-      { name: "Red Cross Blood Bank", city: "Mumbai", contact: "9876543210" },
-      { name: "LifeSaver Blood Bank", city: "Delhi", contact: "8765432109" },
-    ];
-    setBloodBanks(sampleBanks.filter((bank) => bank.city.toLowerCase() === city.toLowerCase()));
+  const handleSearch = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await axios.get(`http://localhost:3000/api/hospitals/all`, {
+        params: { city }
+      });
+      setBloodBanks(response.data.filter((bank) => bank.location.toLowerCase() === city.toLowerCase()));
+    } catch (err) {
+      setError("Error fetching data");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -28,11 +38,13 @@ const SearchBloodBanks = () => {
       </button>
 
       <div className="mt-4">
+        {loading && <p>Loading...</p>}
+        {error && <p>{error}</p>}
         {bloodBanks.length > 0 ? (
           bloodBanks.map((bank, index) => (
             <div key={index} className="border p-2 mt-2">
               <p><strong>Name:</strong> {bank.name}</p>
-              <p><strong>City:</strong> {bank.city}</p>
+              <p><strong>City:</strong> {bank.location}</p>
               <p><strong>Contact:</strong> {bank.contact}</p>
             </div>
           ))
